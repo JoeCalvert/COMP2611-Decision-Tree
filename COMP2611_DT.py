@@ -574,7 +574,13 @@ def test_tennis_tree(filename):
     tree = None
     error = 0
 
-    #insert code here
+    # Use 80% of the dataset as training data, 20% as testing
+    dataSet = DataSet(name=filename, target='Play')
+    trainSet, testSet = train_test_split(dataSet, test_split=0.5)
+
+    # Learn the training data, estimate error on testSet
+    tree = DecisionTreeLearner(trainSet)
+    error = err_ratio(tree, testSet)
 
     return(trainSet,testSet,tree,error)
 
