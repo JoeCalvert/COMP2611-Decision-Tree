@@ -324,8 +324,10 @@ def deviation(value,parent_pos,parent_neg):
     if(value.pos == 0 and value.neg == 0):
         return 0
 
-    #Insert code here
+    expected = lambda a: ((value.pos + value.neg) / (parent_pos+parent_neg)) * a
+    dev_calc = lambda node_val, parent_val: pow(value.pos - expected(parent_val), 2) / expected(parent_val)
 
+    deviation = dev_calc(value.pos, parent_pos) + dev_calc(value.neg, parent_neg)
 
     return (deviation)
 
@@ -408,6 +410,7 @@ def evaluate(predict,dataset, examples = None):
                 #Insert code here
                 #calculate p_value using the stats.chi2.cdf function.
                 #The degree of freedom (num of variable) is the number of branches at the parent.
+                p_value = stats.chi2.cdf(DELTA, len(parent.branches))
 
 
 
@@ -653,7 +656,7 @@ def genPruneTestSet():
     ##returns the dataset created
     data = None
 
-    #insert code here
+    data = SyntheticRestaurantPruneTest(1000)
 
 
     return(data)
@@ -667,7 +670,9 @@ def prune_tree(tree,testSet):
     error_rate = 0
     delta = 1.0
 
-    #insert code here
+    while p_value<0.05:
+        p_value, delta, error_rate = evaluate(tree, testSet)
+        clear_counts(tree)
 
 
     return(testSet,p_value,delta,tree,error_rate)
