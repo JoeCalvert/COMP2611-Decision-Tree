@@ -1,1 +1,1 @@
-# COMP2611-Decision-Tree
+<p align="center"><img src="https://socialify.git.ci/JoeCalvert/COMP2611-Decision-Tree/image?description=1&amp;descriptionEditable=Coursework%202%3A%20Decision%20Trees&amp;language=1&amp;name=1&amp;owner=1&amp;theme=Light" alt="project-image"></p>
