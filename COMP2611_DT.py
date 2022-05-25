@@ -624,7 +624,6 @@ def train_restaurant_tree(trainSet, testSet, N=200):
     for i in range(2, N+1):
         num_samples = N-i+1
         samples = train_test_split(trainSet, start=0, end=num_samples)[1]
-        print(samples)
         n_tree = DecisionTreeLearner(samples)
         n_error = err_ratio(n_tree, testSet)
 
@@ -642,7 +641,8 @@ def train_tree(trainSet, testSet):
     tree = None
     error = 0
 
-    #insert code here
+    tree = DecisionTreeLearner(trainSet)
+    error = err_ratio(tree, testSet)
 
 
     return(tree,error)
