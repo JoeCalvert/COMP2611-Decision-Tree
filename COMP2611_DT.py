@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from utils import *
 import numpy as np
 import csv
@@ -7,14 +9,14 @@ import scipy.stats as stats
 class DataSet:
     """
 
-    d.examples   A list of examples. Each one is a list of attribute values.
-    d.attr_names List of mnemonic names for corresponding attrs.
-    d.target     The attribute that a learning algorithm will try to predict.
-                 By default the final attribute.
-    d.name       Name of the data set.
+    d.examples   = A list of examples. Each one is a list of attribute values.
+    d.attr_names = List of mnemonic names for corresponding attrs.
+    d.target     = The attribute that a learning algorithm will try to predict.
+                 = By default, the final attribute.
+    d.name       = Name of the data set.
     """
 
-    def __init__(self, examples=None, attrs=None, attr_names=None, name = '', target=-1):
+    def __init__(self, examples=None, attrs=None, attr_names=None, name='', target=-1):
 
         self.name = name
 
@@ -22,19 +24,17 @@ class DataSet:
 
         if examples is None:
             # opening the CSV file
-            with open((name + '.csv'),'r') as file:
+            with open((name + '.csv'), 'r') as file:
                 # reading the CSV file
-                csvFile = csv.reader(file)
-                attr_names = next(csvFile)
+                csv_file = csv.reader(file)
+                attr_names = next(csv_file)
                 self.examples = list(csv.reader(file))
         else:
             self.examples = examples
 
-
         # attrs are the indices of examples, unless otherwise stated.
         if self.examples is not None and attrs is None:
             attrs = list(range(len(self.examples[0])))
-
 
         self.attrs = attrs
 
@@ -44,14 +44,11 @@ class DataSet:
         else:
             self.attr_names = attr_names or attrs
 
-
-
         self.target = self.attr_num(target)
 
         self.inputs = [a for a in self.attrs if a != self.target]
         # find possible range of values for attributes
         self.values = list(map(unique, zip(*self.examples)))
-
 
     def attr_num(self, attr):
         """Returns the number used for attr, which can be a name, or -n .. n-1."""
@@ -61,7 +58,6 @@ class DataSet:
             return len(self.attrs) + attr
         else:
             return attr
-
 
     def sanitize(self, example):
         """Return a copy of example, with non-input attributes replaced by None."""
@@ -95,7 +91,6 @@ class DataSet:
         return '<DataSet({}): {:d} examples, {:d} attributes>'.format(self.name, len(self.examples), len(self.attrs))
 
 
-
 def err_ratio(predict, dataset, examples=None):
     """
     Return the proportion of the examples that are NOT correctly predicted.
@@ -123,7 +118,7 @@ def grade_learner(predict, tests):
 
 
 def train_test_split(dataset, start=None, end=None, test_split=None):
-        """
+    """
         If you are giving 'start' and 'end' as parameters,
         then it will return the testing set from index 'start' to 'end'
         and the rest for training.
@@ -131,24 +126,21 @@ def train_test_split(dataset, start=None, end=None, test_split=None):
         test_split * 100% as the testing set and the rest as
         training set.
         """
-        examples = dataset.examples
-        if test_split is None:
-            train = examples[:start] + examples[end:]
-            val = examples[start:end]
-        else:
-            total_size = len(examples)
-            val_size = int(total_size * test_split)
-            train_size = total_size - val_size
-            train = examples[:train_size]
-            val = examples[train_size:total_size]
+    examples = dataset.examples
+    if test_split is None:
+        train = examples[:start] + examples[end:]
+        val = examples[start:end]
+    else:
+        total_size = len(examples)
+        val_size = int(total_size * test_split)
+        train_size = total_size - val_size
+        train = examples[:train_size]
+        val = examples[train_size:total_size]
 
-        train_set = DataSet(examples = train, attr_names = dataset.attr_names,attrs = dataset.attrs,target = dataset.target)
-        val_set = DataSet(examples = val, attr_names = dataset.attr_names,attrs = dataset.attrs,target = dataset.target)
+    train_set = DataSet(examples=train, attr_names=dataset.attr_names, attrs=dataset.attrs, target=dataset.target)
+    val_set = DataSet(examples=val, attr_names=dataset.attr_names, attrs=dataset.attrs, target=dataset.target)
 
-        return train_set, val_set
-
-
-
+    return train_set, val_set
 
 
 def PluralityLearner(dataset):
@@ -164,43 +156,44 @@ def PluralityLearner(dataset):
 
     return predict
 
+
 class DecisionFork:
     """
     A fork of a decision tree holds an attribute to test, and a dict
     of branches, one for each of the attribute's values.
     """
 
-    def __init__(self, attr, attr_name=None, default_child=None, branches=None,parent=None):
+    def __init__(self, attr, attr_name=None, default_child=None, branches=None, parent=None):
         """Initialize by saying what attribute this node tests."""
         self.attr = attr
         self.attr_name = attr_name or attr
         self.default_child = default_child
         self.branches = branches or {}
-        self.pos=0
-        self.neg=0
+        self.pos = 0
+        self.neg = 0
         self.parent_node = parent
 
-    def __call__(self, example,target=None):
+    def __call__(self, example, target=None):
         """Given an example, classify it using the attribute and the branches."""
         attr_val = example[self.attr]
 
-        if(target):
-            if(example[target] == "Yes"):
-                self.pos = self.pos+1
+        if (target):
+            if (example[target] == "Yes"):
+                self.pos = self.pos + 1
             else:
-                self.neg = self.neg+1
+                self.neg = self.neg + 1
 
         if attr_val in self.branches:
-            return self.branches[attr_val](example,target)
+            return self.branches[attr_val](example, target)
         else:
-            print("attr not found ",attr_val)
+            print("attr not found ", attr_val)
             # return default class when attribute is unknown
             return self.default_child(example)
 
     def clear_count(self):
         self.pos = 0
         self.neg = 0
-        return(0)
+        return (0)
 
     def add(self, val, subtree):
         """Add a branch. If self.attr = val, go to the given subtree."""
@@ -216,42 +209,42 @@ class DecisionFork:
     def __repr__(self):
         return 'DecisionFork({0!r}, {1!r}, {2!r})'.format(self.attr, self.attr_name, self.branches)
 
+
 class DecisionLeaf:
     """A leaf of a decision tree holds just a result."""
 
-    def __init__(self, result,parent=None):
-        self.pos=0
-        self.neg=0
+    def __init__(self, result, parent=None):
+        self.pos = 0
+        self.neg = 0
         self.result = result
         self.parent_node = parent
 
-#    def __call__(self, example):
-#        return self.result
+    #    def __call__(self, example):
+    #        return self.result
 
-    def __call__(self, example,target=None):
+    def __call__(self, example, target=None):
 
-        if(target):
-            if(example[target] == "Yes"):
-                self.pos= self.pos+1
+        if (target):
+            if (example[target] == "Yes"):
+                self.pos = self.pos + 1
             else:
-                self.neg= self.neg+1
+                self.neg = self.neg + 1
 
         return self.result
 
     def clear_count(self):
         self.pos = 0
         self.neg = 0
-        return(0)
+        return (0)
 
-
-    def display(self,indent=0):
+    def display(self, indent=0):
         print('RESULT =', self.result)
 
     def __repr__(self):
         return repr(self.result)
 
-def DecisionTreeLearner(dataset):
 
+def DecisionTreeLearner(dataset):
     target, values = dataset.target, dataset.values
 
     def decision_tree_learning(examples, attrs, parent_examples=()):
@@ -314,26 +307,29 @@ def information_content(values):
     probabilities = normalize(remove_all(0, values))
     return sum(-p * np.log2(p) for p in probabilities)
 
-#Task 4c
-def deviation(value,parent_pos,parent_neg):
-    ##actual counts of exmaples at this node are given by value.pos and value.neg
-    ##actula counts at its parents are parent.pos and parent.neg
-    ##function must return the sqaured difference between the actual and expected counts.
-    deviation = 0
 
-    if(value.pos == 0 and value.neg == 0):
+# Task 4c
+def deviation(value, parent_pos, parent_neg):
+    # actual counts of examples at this node are given by value.pos and value.neg
+    # actual counts at its parents are parent.pos and parent.neg
+    # function must return the sqaured difference between the actual and expected counts.
+
+    dev = 0
+
+    if (value.pos == 0 and value.neg == 0):
         return 0
 
-    expected = lambda a: ((value.pos + value.neg) / (parent_pos+parent_neg)) * a
+    expected = lambda a: ((value.pos + value.neg) / (parent_pos + parent_neg)) * a
     dev_calc = lambda node_val, parent_val: pow(node_val - expected(parent_val), 2) / expected(parent_val)
 
-    deviation = dev_calc(value.pos, parent_pos) + dev_calc(value.neg, parent_neg)
+    dev = dev_calc(value.pos, parent_pos) + dev_calc(value.neg, parent_neg)
 
-    return (deviation)
+    return (dev)
 
-def replaceFork(parent,leaf):
-    if(parent.parent_node == None): # tries to handle removal of top node (has no parents)
-        for key, value in list(parent.branches.items()): #make all branches same leaf
+
+def replaceFork(parent, leaf):
+    if (parent.parent_node == None):  # tries to handle removal of top node (has no parents)
+        for key, value in list(parent.branches.items()):  # make all branches same leaf
             parent.branches[key] = leaf
     else:
         for key, value in list(parent.parent_node.branches.items()):
@@ -342,92 +338,86 @@ def replaceFork(parent,leaf):
                 return 1
     return 0
 
-def order(tree):
 
+def order(tree):
     def decisiontree_iterator(parent):
         ''' This function accepts a node as an argument
         and iterate over all values of its children to clear examples counts
         '''
 
-        parent.branches = dict(sorted(parent.branches.items(), key = lambda kv: kv[0]))
+        parent.branches = dict(sorted(parent.branches.items(), key=lambda kv: kv[0]))
 
-
-        # Iterate over all key-value pairs of DecisionFrok argument
+        # Iterate over all key-value pairs of DecisionFork argument
         for key, value in list(parent.branches.items()):
-                if isinstance(value,DecisionFork):
-                    yield from decisiontree_iterator(value)
+            if isinstance(value, DecisionFork):
+                yield from decisiontree_iterator(value)
 
     all_nodes = list(decisiontree_iterator(tree))
-
 
     return tree
 
 
 def clear_counts(tree):
-
     def decisiontree_iterator(parent):
         ''' This function accepts a node as an argument
         and iterate over all values of its children to clear examples counts
         '''
-        # Iterate over all key-value pairs of DecisionFrok argument
+        # Iterate over all key-value pairs of DecisionFork argument
         for key, value in list(parent.branches.items()):
-                value.clear_count()
-                if isinstance(value,DecisionFork):
-                    yield from decisiontree_iterator(value)
+            value.clear_count()
+            if isinstance(value, DecisionFork):
+                yield from decisiontree_iterator(value)
 
     all_nodes = list(decisiontree_iterator(tree))
 
-#Task 4d
-def evaluate(predict,dataset, examples = None):
+
+# Task 4d
+def evaluate(predict, dataset, examples=None):
     """
     Return the proportion of the examples that are NOT correctly predicted.
 
     """
+
     def decisiontree_iterator(parent):
         ''' This function accepts a node as an argument
         and iterate over all values of its children
         '''
-        p_value = 0
+        p_val = 0
         DELTA = -1.0
-        further_fork = False #used to flag if fork only has leaf nodes
+        further_fork = False  # used to flag if fork only has leaf nodes
 
         # Iterate over all key-value pairs of DecisionFrok argument
         for key, value in list(parent.branches.items()):
-            value.parent_node = parent #makes it easier to prune back
-            if isinstance(value,DecisionFork):
+            value.parent_node = parent  # makes it easier to prune back
+            if isinstance(value, DecisionFork):
                 further_fork = True
-                #yield from decisiontree_iterator(value)
-                p_value,DELTA = decisiontree_iterator(value)
-
+                # yield from decisiontree_iterator(value)
+                p_val, DELTA = decisiontree_iterator(value)
 
         # Is a fork with only leaf nodes therefore could be pruned
-        if further_fork == False:
-            if(parent.pos > 0 and parent.neg > 0):
+        if further_fork == False and (parent.pos > 0 and parent.neg > 0):
+            if (parent.pos > 0 and parent.neg > 0):
 
-                DELTA = sum(deviation(value,parent.pos,parent.neg) for key, value in parent.branches.items())
-                #Insert code here
-                #calculate p_value using the stats.chi2.cdf function.
-                #The degree of freedom (num of variable) is the number of branches at the parent.
-                p_value = stats.chi2.cdf(DELTA, df=len(parent.branches.keys()))
+                DELTA = sum(deviation(value, parent.pos, parent.neg) for key, value in parent.branches.items())
+                # Insert code here
+                # calculate p_value using the stats.chi2.cdf function.
+                # The degree of freedom (num of variable) is the number of branches at the parent.
+                p_val = stats.chi2.cdf(DELTA, df=len(parent.branches.keys()))
 
+                print("chisquare-score is:", DELTA, " and p value is:", p_val)
 
-
-                print("chisquare-score is:", DELTA, " and p value is:", p_value)
-
-                if p_value <= 0.05:
+                if p_val <= 0.05:
                     print("Null Hypothesis is rejected.")
                 else:
                     print("Failed to reject the Null hypothesis.")
                     print("Pruning")
-                    #can prune parent
-                    if(parent.pos> parent.neg):
-                        replaceFork(parent,DecisionLeaf("Yes"))
+                    # can prune parent
+                    if parent.pos > parent.neg:
+                        replaceFork(parent, DecisionLeaf("Yes"))
                     else:
-                        replaceFork(parent,DecisionLeaf("No"))
+                        replaceFork(parent, DecisionLeaf("No"))
 
-        return(p_value,DELTA)
-
-
+        return p_val, DELTA
 
     examples = examples or dataset.examples
     if len(examples) == 0:
@@ -436,28 +426,26 @@ def evaluate(predict,dataset, examples = None):
 
     target = dataset.target
 
-    #predict outcome for each exmaple
+    # predict outcome for each example
     for example in examples:
         desired = example[dataset.target]
-        output = predict(example,target)
+        output = predict(example, target)
         if output == desired:
             right += 1
 
+    p_value, DELTA = decisiontree_iterator(predict)
 
-    p_value,DELTA = decisiontree_iterator(predict)
-
-
-    return (p_value,DELTA,1 - (right / len(examples)))
-
+    return p_value, DELTA, 1 - (right / len(examples))
 
 
 def RestaurantDataSet(examples=None):
-   """
+    """
    [Figure 19.3]
    Build a DataSet of Restaurant waiting examples.
    """
-   return DataSet(name='restaurant1', target='Wait', examples=examples,
-                        attr_names='Alternate Bar Fri/Sat Hungry Patrons Raining Reservation WaitEstimate Wait')
+    return DataSet(name='restaurant1', target='Wait', examples=examples,
+                   attr_names='Alternate Bar Fri/Sat Hungry Patrons Raining Reservation WaitEstimate Wait')
+
 
 restaurant = RestaurantDataSet()
 
@@ -465,7 +453,8 @@ restaurant = RestaurantDataSet()
 def T(attr_name, branches):
     branches = {value: (child if isinstance(child, DecisionFork) else DecisionLeaf(child))
                 for value, child in branches.items()}
-    return DecisionFork(attr = restaurant.attr_num(attr_name),attr_name=attr_name,default_child = print, branches = branches)
+    return DecisionFork(attr=restaurant.attr_num(attr_name), attr_name=attr_name, default_child=print,
+                        branches=branches)
 
 
 waiting_decision_tree = T('Patrons',
@@ -487,66 +476,61 @@ waiting_decision_tree = T('Patrons',
                                                                       'Yes': 'Yes'})})})})})
 
 
-
 def SyntheticRestaurantPruneTest(n=100):
-  """Generate a DataSet with n examples."""
-  np.random.seed(4000)
+    """Generate a DataSet with n examples."""
+    np.random.seed(4000)
 
-  def gen():
-    example = list(map(np.random.choice, restaurant.values))
-    example[restaurant.target] = waiting_decision_tree(example)
+    def gen():
+        example = list(map(np.random.choice, restaurant.values))
+        example[restaurant.target] = waiting_decision_tree(example)
 
-
-    rand = np.random.random_sample()
-    if rand >= 0.2:
         rand = np.random.random_sample()
-        if rand >= 0.5:
+        if rand >= 0.2:
+            rand = np.random.random_sample()
+            if rand >= 0.5:
                 if example[5] == "Yes":
                     example[5] = "No"
                 else:
                     if example[1] == "Yes":
                         example[1] = "No"
 
-    return example
+        return example
 
-  return RestaurantDataSet([gen() for _ in range(n)])
+    return RestaurantDataSet([gen() for _ in range(n)])
+
 
 def SyntheticRestaurantTest(n=100):
-  """Generate a DataSet with n examples."""
-  np.random.seed(4000)
+    """Generate a DataSet with n examples."""
+    np.random.seed(4000)
 
-  def gen():
-    example = list(map(np.random.choice, restaurant.values))
+    def gen():
+        example = list(map(np.random.choice, restaurant.values))
 
-    rand = np.random.random_sample()
-    if rand >= 1.1:
-        if example[restaurant.target] == "Yes":
-            example[restaurant.target] = "No"
+        rand = np.random.random_sample()
+        if rand >= 1.1:
+            if example[restaurant.target] == "Yes":
+                example[restaurant.target] = "No"
 
-        else:
-            example[restaurant.target] == "Yes"
+        return example
 
-    return example
-
-  return RestaurantDataSet([gen() for _ in range(n)])
+    return RestaurantDataSet([gen() for _ in range(n)])
 
 
 def SyntheticRestaurant(n=100):
-  """Generate a DataSet with n examples."""
+    """Generate a DataSet with n examples."""
 
-  np.random.seed(2000)
+    np.random.seed(2000)
+
+    def gen():
+        example = list(map(np.random.choice, restaurant.values))
+
+        example[restaurant.target] = waiting_decision_tree(example)
+        return example
+
+    return RestaurantDataSet([gen() for _ in range(n)])
 
 
-  def gen():
-
-    example = list(map(np.random.choice, restaurant.values))
-
-    example[restaurant.target] = waiting_decision_tree(example)
-    return example
-
-  return RestaurantDataSet([gen() for _ in range(n)])
-
-#TASK 1
+# TASK 1
 
 def learn_tennis_tree(filename):
     ## function should create a decision tree from the file named filename
@@ -555,14 +539,13 @@ def learn_tennis_tree(filename):
     dataSet = None
     tree = None
 
-
     dataSet = DataSet(name=filename, target='Play')
     tree = DecisionTreeLearner(dataSet)
 
+    return (dataSet, tree)
 
-    return(dataSet,tree)
 
-#TASK 2
+# TASK 2
 
 def test_tennis_tree(filename):
     ## function should split the data provided by filename into a traing and test set.
@@ -583,7 +566,8 @@ def test_tennis_tree(filename):
     tree = DecisionTreeLearner(trainSet)
     error = err_ratio(tree, testSet)
 
-    return(trainSet,testSet,tree,error)
+    return (trainSet, testSet, tree, error)
+
 
 # TASK 3a
 def genSyntheticTrainSet():
@@ -593,8 +577,8 @@ def genSyntheticTrainSet():
 
     data = SyntheticRestaurant(200)
 
+    return (data)
 
-    return(data)
 
 # TASK 3b
 def genSyntheticTestSet():
@@ -604,10 +588,10 @@ def genSyntheticTestSet():
 
     data = SyntheticRestaurantTest(100)
 
-
     return (data)
 
-#TASK 3c
+
+# TASK 3c
 def train_restaurant_tree(trainSet, testSet, N=200):
     ## function should learn decision trees using different quantities of the training set (trainSet) from 1 to N
     ## where N should be the total size of the training set (trainSet)
@@ -622,19 +606,20 @@ def train_restaurant_tree(trainSet, testSet, N=200):
     tree = DecisionTreeLearner(trainSet)
     benchmark_error = err_ratio(tree, testSet)
 
-    for i in range(2, N+1):
-        num_samples = N-i+1
+    for i in range(2, N + 1):
+        num_samples = N - i + 1
         samples = train_test_split(trainSet, start=0, end=num_samples)[1]
         n_tree = DecisionTreeLearner(samples)
         n_error = err_ratio(n_tree, testSet)
 
         if benchmark_error == n_error:
-            #no need to check if i less than samples_required if testing starts at N
+            # no need to check if i less than samples_required if testing starts at N
             samples_required = num_samples
 
-    return(tree,samples_required-1)
+    return (tree, samples_required - 1)
 
-#TASK 3d
+
+# TASK 3d
 def train_tree(trainSet, testSet):
     ## function should learn a decision tree the training set (trainSet)
     ## and test the tree on the whole test set (testSet)
@@ -645,10 +630,10 @@ def train_tree(trainSet, testSet):
     tree = DecisionTreeLearner(trainSet)
     error = err_ratio(tree, testSet)
 
+    return (tree, error)
 
-    return(tree,error)
 
-#TASK 4a
+# TASK 4a
 def genPruneTestSet():
     ##function generates a synthetic data set using the SytheticRestaruantPruneTest method
     ##returns the dataset created
@@ -656,13 +641,14 @@ def genPruneTestSet():
 
     data = SyntheticRestaurantPruneTest(1000)
 
+    return (data)
 
-    return(data)
 
-#TASK 4b
-def prune_tree(tree,testSet):
-    ##function should prune the decison tree (tree) using the evaluate method as many times as required when evaluated using testSet.
-    ##the function must return the testSet used, the p_value, K and error rates of the final tree (tree) returned from the evalaute function.
+# TASK 4b
+def prune_tree(tree, testSet):
+    # #function should prune the decison tree (tree) using the evaluate method as many times as required when
+    # evaluated using testSet. #the function must return the testSet used, the p_value, K and error rates of the
+    # final tree (tree) returned from the evalaute function.
 
     p_value = 0
     error_rate = 0
@@ -672,22 +658,20 @@ def prune_tree(tree,testSet):
         p_value, delta, error_rate = evaluate(tree, testSet)
         clear_counts(tree)
 
-
-    return(testSet,p_value,delta,tree,error_rate)
-
+    return (testSet, p_value, delta, tree, error_rate)
 
 
 if __name__ == "__main__":
     filename = "./tennis"
-    tennis_dataSet,tree = learn_tennis_tree(filename) #task 1
-    error_rate = test_tennis_tree(filename) #task 2
-    print("Error_rate ",error_rate)
-    train_set = genSyntheticTrainSet() #task 3a
-    test_set = genSyntheticTestSet() #task 3b
-    restaurant_tree,errors = train_restaurant_tree(train_set,test_set) #task 3c
+    tennis_dataSet, tree = learn_tennis_tree(filename)  # task 1
+    error_rate = test_tennis_tree(filename)  # task 2
+    print("Error_rate ", error_rate)
+    train_set = genSyntheticTrainSet()  # task 3a
+    test_set = genSyntheticTestSet()  # task 3b
+    restaurant_tree, errors = train_restaurant_tree(train_set, test_set)  # task 3c
 
-    tree,error_rate = train_tree(train_set,test_set) #task 2d
+    tree, error_rate = train_tree(train_set, test_set)  # task 2d
 
-    testData = genPruneTestSet() #task 4a
-    testData,p_value,delta,pruned_tree,error = prune_tree(tree,testData) #task 4b,c and d
-    print("pruned error rate ",error)
+    testData = genPruneTestSet()  # task 4a
+    testData, p_value, delta, pruned_tree, error = prune_tree(tree, testData)  # task 4b,c and d
+    print("pruned error rate ", error)
