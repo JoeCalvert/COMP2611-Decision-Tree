@@ -402,15 +402,13 @@ def evaluate(predict,dataset, examples = None):
 
         # Is a fork with only leaf nodes therefore could be pruned
         if further_fork == False:
-
             if(parent.pos > 0 and parent.neg > 0):
 
                 DELTA = sum(deviation(value,parent.pos,parent.neg) for key, value in parent.branches.items())
-
                 #Insert code here
                 #calculate p_value using the stats.chi2.cdf function.
                 #The degree of freedom (num of variable) is the number of branches at the parent.
-                p_value = stats.chi2.cdf(DELTA, len(parent.branches.items()))
+                p_value = stats.chi2.cdf(DELTA, df=len(parent.branches.keys()))
 
 
 
