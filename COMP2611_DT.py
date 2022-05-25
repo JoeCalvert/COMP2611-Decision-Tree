@@ -406,7 +406,7 @@ def evaluate(predict, dataset, examples=None):
 
                 print("chisquare-score is:", DELTA, " and p value is:", p_val)
 
-                if p_val <= 0.05:
+                if p_val < 0.05:
                     print("Null Hypothesis is rejected.")
                 else:
                     print("Failed to reject the Null hypothesis.")
@@ -676,4 +676,4 @@ if __name__ == "__main__":
 
     testData = genPruneTestSet()  # task 4a
     testData, p_value, delta, pruned_tree, error = prune_tree(tree, testData)  # task 4b,c and d
-    print(error)
+    print("pruned error rate ", error)
