@@ -590,7 +590,7 @@ def genSyntheticTrainSet():
     ##returns the dataset created
     data = None
 
-    #insert code here
+    data = SyntheticRestaurant(200)
 
 
     return(data)
