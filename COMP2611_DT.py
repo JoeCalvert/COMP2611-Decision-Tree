@@ -406,7 +406,7 @@ def evaluate(predict, dataset, examples=None):
 
                 print("chisquare-score is:", DELTA, " and p value is:", p_val)
 
-                if p_val < 0.05:
+                if p_val <= 0.05:
                     print("Null Hypothesis is rejected.")
                 else:
                     print("Failed to reject the Null hypothesis.")
@@ -421,7 +421,7 @@ def evaluate(predict, dataset, examples=None):
 
     examples = examples or dataset.examples
     if len(examples) == 0:
-        return 0.0
+        return 0.0, 0.0, 0.0
     right = 0
 
     target = dataset.target
