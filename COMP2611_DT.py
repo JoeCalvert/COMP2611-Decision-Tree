@@ -676,4 +676,4 @@ if __name__ == "__main__":
 
     testData = genPruneTestSet()  # task 4a
     testData, p_value, delta, pruned_tree, error = prune_tree(tree, testData)  # task 4b,c and d
-    print("pruned error rate ", error)
+    print(error)
