@@ -410,7 +410,7 @@ def evaluate(predict,dataset, examples = None):
                 #Insert code here
                 #calculate p_value using the stats.chi2.cdf function.
                 #The degree of freedom (num of variable) is the number of branches at the parent.
-                p_value = stats.chi2.cdf(DELTA, len(parent.branches))
+                p_value = stats.chi2.cdf(DELTA, len(parent.branches.items()))
 
 
 
