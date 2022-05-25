@@ -402,7 +402,7 @@ def evaluate(predict, dataset, examples=None):
                 # Insert code here
                 # calculate p_value using the stats.chi2.cdf function.
                 # The degree of freedom (num of variable) is the number of branches at the parent.
-                p_val = stats.chi2.cdf(DELTA, df=len(parent.branches.keys()))
+                p_val = stats.chi2.cdf(DELTA, len(parent.branches))
 
                 print("chisquare-score is:", DELTA, " and p value is:", p_val)
 
@@ -654,11 +654,13 @@ def prune_tree(tree, testSet):
     error_rate = 0
     delta = 1.0
 
-    while p_value<0.05:
-        p_value, delta, error_rate = evaluate(tree, testSet)
-        clear_counts(tree)
+    p_value, delta, error_rate = evaluate(tree, testSet)
 
-    return (testSet, p_value, delta, tree, error_rate)
+    while p_value < 0.05:
+        clear_counts(tree)
+        p_value, delta, error_rate = evaluate(tree, testSet)
+
+    return (testSet, p_value, delta, error_rate)
 
 
 if __name__ == "__main__":
@@ -673,5 +675,5 @@ if __name__ == "__main__":
     tree, error_rate = train_tree(train_set, test_set)  # task 2d
 
     testData = genPruneTestSet()  # task 4a
-    testData, p_value, delta, pruned_tree, error = prune_tree(tree, testData)  # task 4b,c and d
+    testData, p_value, delta, error = prune_tree(tree, testData)  # task 4b,c and d
     print("pruned error rate ", error)
