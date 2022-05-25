@@ -325,7 +325,7 @@ def deviation(value,parent_pos,parent_neg):
         return 0
 
     expected = lambda a: ((value.pos + value.neg) / (parent_pos+parent_neg)) * a
-    dev_calc = lambda node_val, parent_val: pow(value.pos - expected(parent_val), 2) / expected(parent_val)
+    dev_calc = lambda node_val, parent_val: pow(node_val - expected(parent_val), 2) / expected(parent_val)
 
     deviation = dev_calc(value.pos, parent_pos) + dev_calc(value.neg, parent_neg)
 
