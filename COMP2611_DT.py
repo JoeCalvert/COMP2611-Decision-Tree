@@ -601,7 +601,7 @@ def genSyntheticTestSet():
     ##returns the dataset created
     data = None
 
-    #insert code here
+    data = SyntheticRestaurantTest(100)
 
 
     return (data)
