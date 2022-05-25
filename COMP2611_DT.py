@@ -555,7 +555,8 @@ def learn_tennis_tree(filename):
     tree = None
 
 
-    #insert code here
+    dataSet = DataSet(name=filename, target='Play')
+    tree = DecisionTreeLearner(dataSet)
 
 
     return(dataSet,tree)
