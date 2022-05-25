@@ -576,7 +576,7 @@ def test_tennis_tree(filename):
 
     # Use 80% of the dataset as training data, 20% as testing
     dataSet = DataSet(name=filename, target='Play')
-    trainSet, testSet = train_test_split(dataSet, test_split=0.5)
+    trainSet, testSet = train_test_split(dataSet, test_split=0.2)
 
     # Learn the training data, estimate error on testSet
     tree = DecisionTreeLearner(trainSet)
@@ -617,9 +617,20 @@ def train_restaurant_tree(trainSet, testSet, N=200):
     tree = None
     samples_required = 0
 
+    samples_required = N
+    tree = DecisionTreeLearner(trainSet)
+    benchmark_error = err_ratio(tree, testSet)
 
-    #insert code here
+    for i in range(2, N+1):
+        num_samples = N-i+1
+        samples = train_test_split(trainSet, start=0, end=num_samples)[1]
+        print(samples)
+        n_tree = DecisionTreeLearner(samples)
+        n_error = err_ratio(n_tree, testSet)
 
+        if benchmark_error == n_error:
+            #no need to check if i less than samples_required if testing starts at N
+            samples_required = num_samples
 
     return(tree,samples_required)
 
