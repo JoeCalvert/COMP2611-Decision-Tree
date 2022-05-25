@@ -634,7 +634,7 @@ def train_restaurant_tree(trainSet, testSet, N=200):
             #no need to check if i less than samples_required if testing starts at N
             samples_required = num_samples
 
-    return(tree,samples_required)
+    return(tree,samples_required-1)
 
 #TASK 3d
 def train_tree(trainSet, testSet):
